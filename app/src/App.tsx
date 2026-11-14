@@ -61,6 +61,13 @@ export default function App(){
 
   const budgetMoneyField=(label:string,v:number,set:(n:number)=>void,min:number,max:number,helper:string)=><label className="budget-money-field"><div><b>{label}</b><span>{helper}</span></div><input type="text" inputMode="numeric" value={formatIDRInput(v)} placeholder="Rp 0" onChange={e=>set(Math.min(max,Math.max(min,parseIDR(e.target.value))))}/></label>;
 
+  const downloadBudgetPDF=()=>{
+    const oldTitle=document.title;
+    document.title=`Laporan Anggaran Keuangan - ${budgetName||'Wealthplanner'}`;
+    window.print();
+    window.setTimeout(()=>{document.title=oldTitle},500);
+  };
+
   return <main>
     <aside><h2>🟩 wealthplanner</h2><p>KALKULATOR</p>{items.map(x=><button key={x[0]} className={id===x[0]?'active':''} onClick={()=>{S(x[0]);BS(0)}}>{x[1]}</button>)}</aside>
     <section><small>FINANCIAL PLANNING</small><h1>Rencanakan tujuan keuanganmu</h1><p>Simulasikan tujuan dan lihat kondisi finansialmu secara lebih terarah.</p>
@@ -97,6 +104,11 @@ export default function App(){
             <div className="surplus"><b>Surplus</b><strong>{money(budget.surplus)}</strong></div>
           </div></div>
           <p className="gold-note">Harga emas saat ini: {money(budget.goldPrice)}/gram. Nilai ini menjadi referensi laporan dan tidak mengubah total anggaran.</p>
+          <div className="budget-report-actions">
+            <button className="secondary" onClick={()=>BS(budgetSteps.length-1)}>Kembali</button>
+            <button className="primary" onClick={downloadBudgetPDF}>Unduh PDF</button>
+            <a className="consult-button" href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer">Konsultasikan Kebutuhan Anda</a>
+          </div>
         </article>}
       </>:<div className="layout">
         <article><h2>{items.find(x=>x[0]===id)?.[1]}</h2><p>{items.find(x=>x[0]===id)?.[2]}</p><div className="fields">
