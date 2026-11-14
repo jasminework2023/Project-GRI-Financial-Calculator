@@ -1,7 +1,20 @@
 import React,{useMemo,useState}from'react';
 import{money,contribution,futureValue,mortgage,financialCheckup,financialBudget}from'./calc';
 
-const items=[['check','Financial Check-Up','Cek cash flow, cicilan, dana darurat, investasi, dan proteksi.'],['budget','Anggaran Keuangan','Susun anggaran berdasarkan prioritas keuangan.'],['kpr','KPR','Estimasi cicilan rumah.'],['edu','Dana Pendidikan','Target biaya dan setoran bulanan.'],['pension','Dana Pensiun','Kebutuhan pensiun dan tabungan.'],['inherit','Perencanaan Warisan','Petakan aset dan kewajiban.'],['hajj','Haji & Umrah','Target biaya dan setoran.'],['zakat','Zakat & Wakaf','Simulasi awal zakat dan wakaf.'],['invest','Investasi','Setoran berkala untuk target.'],['insurance','Kebutuhan Asuransi','Estimasi kebutuhan proteksi.']] as const;
+const items=[['check','Financial Check-Up','Cek kondisi cash flow, utang, dana darurat, investasi, dan proteksi.'],['budget','Anggaran Keuangan','Susun anggaran tahunan berdasarkan prioritas pengelolaan keuangan.'],['kpr','KPR','Hitung estimasi cicilan rumah berdasarkan harga, DP, tenor, dan asumsi imbal hasil.'],['edu','Dana Pendidikan','Hitung kebutuhan dana pendidikan dan estimasi setoran berkala.'],['pension','Dana Pensiun','Estimasi kebutuhan dana pensiun dan target tabungan.'],['inherit','Perencanaan Warisan','Petakan aset, kewajiban, dan gambaran aset bersih.'],['hajj','Haji & Umrah','Hitung target biaya dan estimasi setoran berkala.'],['zakat','Zakat & Wakaf','Simulasi awal zakat dan perencanaan wakaf.'],['invest','Investasi','Simulasikan pertumbuhan investasi dari setoran berkala.'],['insurance','Kebutuhan Asuransi','Estimasi kebutuhan proteksi berdasarkan pengeluaran, kewajiban, dan aset.']] as const;
+
+const pageCopy:Record<string,{eyebrow:string;title:string;subtitle:string}>={
+  check:{eyebrow:'FINANCIAL CHECK-UP',title:'Cek kondisi keuanganmu',subtitle:'Lihat kesehatan cash flow, utang, dana darurat, investasi, dan proteksi secara lebih terarah.'},
+  budget:{eyebrow:'ANGGARAN KEUANGAN',title:'Susun anggaran keuanganmu',subtitle:'Atur pemasukan tahunan ke dalam pos prioritas agar pengeluaran lebih terarah.'},
+  kpr:{eyebrow:'PERENCANAAN KPR',title:'Hitung kemampuan cicilan rumahmu',subtitle:'Simulasikan cicilan berdasarkan harga rumah, uang muka, tenor, dan asumsi imbal hasil.'},
+  edu:{eyebrow:'DANA PENDIDIKAN',title:'Rencanakan dana pendidikan',subtitle:'Hitung kebutuhan dana pendidikan dan estimasi setoran yang perlu disiapkan.'},
+  pension:{eyebrow:'DANA PENSIUN',title:'Rencanakan dana pensiunmu',subtitle:'Perkirakan kebutuhan dana di masa pensiun dan target yang perlu disiapkan sejak sekarang.'},
+  inherit:{eyebrow:'PERENCANAAN WARISAN',title:'Petakan aset dan kewajibanmu',subtitle:'Lihat gambaran aset bersih sebagai langkah awal dalam perencanaan warisan.'},
+  hajj:{eyebrow:'HAJI & UMRAH',title:'Rencanakan perjalanan ibadahmu',subtitle:'Tentukan target biaya dan estimasi setoran berkala yang perlu disiapkan.'},
+  zakat:{eyebrow:'ZAKAT & WAKAF',title:'Rencanakan zakat dan wakafmu',subtitle:'Gunakan simulasi ini sebagai gambaran awal dalam menyiapkan zakat dan wakaf.'},
+  invest:{eyebrow:'INVESTASI',title:'Rencanakan pertumbuhan investasimu',subtitle:'Simulasikan potensi nilai investasi dari setoran berkala dan asumsi imbal hasil.'},
+  insurance:{eyebrow:'KEBUTUHAN ASURANSI',title:'Hitung kebutuhan proteksimu',subtitle:'Perkirakan kebutuhan uang pertanggungan berdasarkan kebutuhan keluarga, kewajiban, dan aset yang tersedia.'}
+};
 
 type BudgetStep={key:'name'|'age'|'fixed'|'variable'|'gold';label:string;hint:string};
 const budgetSteps:BudgetStep[]=[
@@ -72,7 +85,7 @@ export default function App(){
     <aside><h2>🟩 wealthplanner</h2><p>KALKULATOR</p>{items.map(x=><button key={x[0]} className={id===x[0]?'active':''} onClick={()=>{S(x[0]);BS(0)}}>{x[1]}</button>)}</aside>
     <section>
       <div className="print-header"><strong>wealthplanner</strong><span>Laporan Simulasi Keuangan</span><b>{items.find(x=>x[0]===id)?.[1]}</b></div>
-      <small>FINANCIAL PLANNING</small><h1>Rencanakan tujuan keuanganmu</h1><p>Simulasikan tujuan dan lihat kondisi finansialmu secara lebih terarah.</p>
+      <small>{pageCopy[id].eyebrow}</small><h1>{pageCopy[id].title}</h1><p>{pageCopy[id].subtitle}</p>
       {id==='budget'?<>
         {!budgetDone&&<div className="budget-shell">
           <article className="budget-form">
