@@ -41,9 +41,25 @@ export default function App(){
   const statusLabel=(s:string)=>s==='healthy'?'Sehat':s==='watch'?'Perhatian':'Prioritas';
   const budgetDone=budgetStep>=budgetSteps.length;
   const currentBudgetStep=budgetSteps[Math.min(budgetStep,budgetSteps.length-1)];
-  const budgetInput=()=>{const s=currentBudgetStep; if(s.key==='name')return <input className="big-input" type="text" value={budgetName} placeholder="Tulis nama kamu" onChange={e=>BN(e.target.value)}/>; if(s.key==='age')return <input className="big-input" type="number" min="1" max="120" value={budgetAge||''} onChange={e=>BA(Math.min(120,Math.max(1,Number(e.target.value)||1)))}/>; if(s.key==='fixed')return <input className="big-input" type="number" min="0" max="100000000000" step="100000" value={fixedIncome||''} onChange={e=>FI(Math.min(100000000000,Math.max(0,Number(e.target.value)||0)))}/>; if(s.key==='variable')return <input className="big-input" type="number" min="0" max="100000000000" step="100000" value={variableIncome||''} onChange={e=>VI(Math.min(100000000000,Math.max(0,Number(e.target.value)||0)))}/>; return <input className="big-input" type="number" min="0" max="100000000" step="1000" value={goldPrice||''} onChange={e=>GP(Math.min(100000000,Math.max(0,Number(e.target.value)||0)))}/>;};
+  const parseIDR=(raw:string)=>Number((raw||'').replace(/\\D/g,''))||0;
+  const formatIDRInput=(n:number)=>n?Math.round(n).toLocaleString('id-ID'):'';
+  const budgetStepValid=()=>{
+    if(currentBudgetStep.key==='name') return budgetName.trim().length>=2;
+    if(currentBudgetStep.key==='age') return budgetAge>=1&&budgetAge<=120;
+    if(currentBudgetStep.key==='fixed') return fixedIncome>0;
+    if(currentBudgetStep.key==='variable') return variableIncome>=0&&fixedIncome>0;
+    return goldPrice>0;
+  };
+  const budgetInput=()=>{
+    const s=currentBudgetStep;
+    if(s.key==='name')return <input className="big-input" type="text" value={budgetName} placeholder="Tulis nama kamu" onChange={e=>BN(e.target.value)}/>;
+    if(s.key==='age')return <input className="big-input" type="number" min="1" max="120" value={budgetAge||''} placeholder="Contoh: 30" onChange={e=>BA(e.target.value===''?0:Math.min(120,Math.max(1,Number(e.target.value)||0)))}/>;
+    if(s.key==='fixed')return <input className="big-input" type="text" inputMode="numeric" value={formatIDRInput(fixedIncome)} placeholder="Rp 0" onChange={e=>FI(Math.min(100000000000,parseIDR(e.target.value)))}/>;
+    if(s.key==='variable')return <input className="big-input" type="text" inputMode="numeric" value={formatIDRInput(variableIncome)} placeholder="Rp 0" onChange={e=>VI(Math.min(100000000000,parseIDR(e.target.value)))}/>;
+    return <input className="big-input" type="text" inputMode="numeric" value={formatIDRInput(goldPrice)} placeholder="Rp 0" onChange={e=>GP(Math.min(100000000,parseIDR(e.target.value)))}/>;
+  };
 
-  const budgetMoneyField=(label:string,v:number,set:(n:number)=>void,min:number,max:number,helper:string)=><label className="budget-money-field"><div><b>{label}</b><span>{helper}</span></div><input type="number" min={min} max={max} step="1000" value={v||''} onChange={e=>set(e.target.value===''?0:Math.min(max,Math.max(min,Number(e.target.value)||0)))}/></label>;
+  const budgetMoneyField=(label:string,v:number,set:(n:number)=>void,min:number,max:number,helper:string)=><label className="budget-money-field"><div><b>{label}</b><span>{helper}</span></div><input type="text" inputMode="numeric" value={formatIDRInput(v)} placeholder="Rp 0" onChange={e=>set(Math.min(max,Math.max(min,parseIDR(e.target.value))))}/></label>;
 
   return <main>
     <aside><h2>🟩 wealthplanner</h2><p>KALKULATOR</p>{items.map(x=><button key={x[0]} className={id===x[0]?'active':''} onClick={()=>{S(x[0]);BS(0)}}>{x[1]}</button>)}</aside>
@@ -55,7 +71,7 @@ export default function App(){
             <div className="step-count">LANGKAH {budgetStep+1} DARI {budgetSteps.length}</div>
             <h2>{budgetSteps[budgetStep].label}</h2><p>{budgetSteps[budgetStep].hint}</p>
             {budgetInput()}
-            <div className="step-actions">{budgetStep>0&&<button className="secondary" onClick={()=>BS(budgetStep-1)}>Kembali</button>}<button className="primary" onClick={()=>budgetStep<budgetSteps.length-1?BS(budgetStep+1):BS(budgetSteps.length)}>{budgetStep<budgetSteps.length-1?'Lanjut':'Lihat Anggaran'}</button></div>
+            <div className="step-actions">{budgetStep>0&&<button className="secondary" onClick={()=>BS(budgetStep-1)}>Kembali</button>}<button className="primary" disabled={!budgetStepValid()} onClick={()=>budgetStep<budgetSteps.length-1?BS(budgetStep+1):BS(budgetSteps.length)}>{budgetStep<budgetSteps.length-1?'Lanjut':'Lihat Anggaran'}</button></div>
           </article>
           <article className="budget-preview"><small>ANGGARAN SEMENTARA</small><h3>{budgetName||'Anggaran kamu'}</h3><strong>{money(budget.totalIncome)}</strong><p>Total pemasukan tahunan</p><div className="budget-mini"><div><span>Tetap</span><b>{money(budget.fixed)}</b></div><div><span>Tidak tetap</span><b>{money(budget.variable)}</b></div></div></article>
         </div>}
