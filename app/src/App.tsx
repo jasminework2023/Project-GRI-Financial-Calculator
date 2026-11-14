@@ -95,7 +95,7 @@ export default function App(){
             {budgetMoneyField('Pos Belanja Sekarang',budget.currentSpending,CS,0,budget.limits.currentSpendingMax,'Sisa anggaran setelah pos prioritas')}
             <div className="total"><b>Total Anggaran</b><strong>{money(budget.totalBudget)}</strong></div>
             <div className="surplus"><b>Surplus</b><strong>{money(budget.surplus)}</strong></div>
-          </div>
+          </div></div>
           <p className="gold-note">Harga emas saat ini: {money(budget.goldPrice)}/gram. Nilai ini menjadi referensi laporan dan tidak mengubah total anggaran.</p>
         </article>}
       </>:<div className="layout">
