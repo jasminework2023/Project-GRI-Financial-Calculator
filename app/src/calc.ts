@@ -65,7 +65,6 @@ export function financialCheckup(input:FinancialCheckupInput):CheckupResult{
   const debtToAsset=totalAssets?totalDebt/totalAssets*100:0;
   const netWorth=totalAssets-totalDebt;
 
-  // Initial rule-based DSS. Thresholds are explicit and can be calibrated later with real user data.
   const metrics:CheckupMetric[]=[
     {key:'cashflow',label:'Cash Flow',value:savingRatio,unit:'%',score:band(savingRatio,20,10),status:'healthy',note:''},
     {key:'debt',label:'Debt Service',value:debtRatio,unit:'%',score:band(debtRatio,20,30,true),status:'healthy',note:''},
@@ -106,19 +105,45 @@ export function financialCheckup(input:FinancialCheckupInput):CheckupResult{
   return {score,grade,metrics,priorities:ordered,surplus,emergencyMonths,debtRatio,savingRatio,investmentRatio,debtToAsset,netWorth,protectionGap};
 }
 
+export type BudgetInput={
+  fixed:number; variable:number; goldPrice:number;
+  iswaf:number; productiveDebt:number; consumerDebt:number;
+  insurance:number; futureFund:number; currentSpending:number;
+};
 
-export type BudgetResult={fixed:number;variable:number;totalIncome:number;zakat:number;iswaf:number;productiveDebt:number;consumerDebt:number;totalDebt:number;insurance:number;futureFund:number;currentSpending:number;totalBudget:number;surplus:number;goldPrice:number};
+export type BudgetResult={
+  fixed:number;variable:number;totalIncome:number;goldPrice:number;
+  zakat:number;iswaf:number;productiveDebt:number;consumerDebt:number;totalDebt:number;
+  insurance:number;futureFund:number;currentSpending:number;totalBudget:number;surplus:number;
+  limits:{iswafMax:number;productiveDebtMin:number;consumerDebtMax:number;totalDebtMax:number;insuranceMin:number;futureFundMin:number;currentSpendingMax:number};
+};
 
-export function financialBudget(input:{fixed:number;variable:number;goldPrice:number}):BudgetResult{
+export function financialBudget(input:BudgetInput):BudgetResult{
   const fixed=safe(input.fixed),variable=safe(input.variable),totalIncome=fixed+variable;
-  const zakat=totalIncome*0.025;
-  const iswaf=totalIncome*0.075;
-  const productiveDebt=totalIncome*0.20;
-  const consumerDebt=totalIncome*0.15;
+  const iswafMax=totalIncome*.075;
+  const productiveDebtMin=totalIncome*.20;
+  const consumerDebtMax=totalIncome*.15;
+  const totalDebtMax=totalIncome*.35;
+  const insuranceMin=totalIncome*.10;
+  const futureFundMin=totalIncome*.10;
+  const zakat=totalIncome*.025;
+
+  const iswaf=Math.min(safe(input.iswaf),iswafMax);
+  const productiveDebt=Math.min(Math.max(safe(input.productiveDebt),productiveDebtMin),totalDebtMax);
+  const consumerDebt=Math.min(safe(input.consumerDebt),consumerDebtMax,Math.max(0,totalDebtMax-productiveDebt));
   const totalDebt=productiveDebt+consumerDebt;
-  const insurance=totalIncome*0.10;
-  const futureFund=totalIncome*0.10;
-  const currentSpending=Math.max(0,totalIncome-zakat-iswaf-totalDebt-insurance-futureFund);
-  const totalBudget=zakat+iswaf+totalDebt+insurance+futureFund+currentSpending;
-  return {fixed,variable,totalIncome,zakat,iswaf,productiveDebt,consumerDebt,totalDebt,insurance,futureFund,currentSpending,totalBudget,surplus:totalIncome-totalBudget,goldPrice:safe(input.goldPrice)};
+  const insurance=Math.max(safe(input.insurance),insuranceMin);
+  const futureFund=Math.max(safe(input.futureFund),futureFundMin);
+
+  const allocatedBeforeCurrent=zakat+iswaf+totalDebt+insurance+futureFund;
+  const currentSpendingMax=Math.max(0,totalIncome-allocatedBeforeCurrent);
+  const currentSpending=Math.min(safe(input.currentSpending),currentSpendingMax);
+  const totalBudget=allocatedBeforeCurrent+currentSpending;
+
+  return {
+    fixed,variable,totalIncome,goldPrice:safe(input.goldPrice),
+    zakat,iswaf,productiveDebt,consumerDebt,totalDebt,insurance,futureFund,currentSpending,
+    totalBudget,surplus:Math.max(0,totalIncome-totalBudget),
+    limits:{iswafMax,productiveDebtMin,consumerDebtMax,totalDebtMax,insuranceMin,futureFundMin,currentSpendingMax}
+  };
 }
