@@ -71,7 +71,13 @@ export default function App(){
             <div className="step-count">LANGKAH {budgetStep+1} DARI {budgetSteps.length}</div>
             <h2>{budgetSteps[budgetStep].label}</h2><p>{budgetSteps[budgetStep].hint}</p>
             {budgetInput()}
-            <div className="step-actions">{budgetStep>0&&<button className="secondary" onClick={()=>BS(budgetStep-1)}>Kembali</button>}<button className="primary" disabled={!budgetStepValid()} onClick={()=>budgetStep<budgetSteps.length-1?BS(budgetStep+1):BS(budgetSteps.length)}>{budgetStep<budgetSteps.length-1?'Lanjut':'Lihat Anggaran'}</button></div>
+            <div className="step-actions">{budgetStep>0&&<button className="secondary" onClick={()=>BS(budgetStep-1)}>Kembali</button>}<button className="primary" disabled={!budgetStepValid()} onClick={()=>{
+              if(budgetStep<budgetSteps.length-1){BS(budgetStep+1);return}
+              const ti=fixedIncome+variableIncome;
+              PD(Math.round(ti*.20)); CD(Math.round(ti*.15)); INS(Math.round(ti*.10)); FF(Math.round(ti*.10));
+              CS(Math.max(0,ti-Math.round(ti*.20)-Math.round(ti*.15)-Math.round(ti*.10)-Math.round(ti*.10)));
+              BS(budgetSteps.length);
+            }}>{budgetStep<budgetSteps.length-1?'Lanjut':'Lihat Anggaran'}</button></div>
           </article>
           <article className="budget-preview"><small>ANGGARAN SEMENTARA</small><h3>{budgetName||'Anggaran kamu'}</h3><strong>{money(budget.totalIncome)}</strong><p>Total pemasukan tahunan</p><div className="budget-mini"><div><span>Tetap</span><b>{money(budget.fixed)}</b></div><div><span>Tidak tetap</span><b>{money(budget.variable)}</b></div></div></article>
         </div>}
