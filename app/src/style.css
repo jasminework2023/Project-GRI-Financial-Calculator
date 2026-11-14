@@ -35,3 +35,10 @@
   .budget-data>div:last-child{border-bottom:0}
   .budget-data .highlight{grid-column:auto}
 }
+
+.budget-data>div{display:grid!important;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr)!important;align-items:center!important;gap:24px!important}
+.budget-data>div span{white-space:normal}
+.budget-data>div b{text-align:right}
+@media(max-width:640px){
+ .budget-data>div{grid-template-columns:1fr auto!important;gap:12px!important}
+}
