@@ -39,7 +39,9 @@ export default function App(){
 
   const field=(label:string,v:number,set:(n:number)=>void)=><label>{label}<input type="number" min="0" value={v} onChange={e=>set(Math.max(0,Number(e.target.value)||0))}/></label>;
   const statusLabel=(s:string)=>s==='healthy'?'Sehat':s==='watch'?'Perhatian':'Prioritas';
-  const budgetInput=()=>{const s=budgetSteps[budgetStep]; if(s.key==='name')return <input className="big-input" type="text" value={budgetName} placeholder="Tulis nama kamu" onChange={e=>BN(e.target.value)}/>; if(s.key==='age')return <input className="big-input" type="number" min="1" max="120" value={budgetAge} onChange={e=>BA(Math.min(120,Math.max(1,Number(e.target.value)||1)))}/>; if(s.key==='fixed')return <input className="big-input" type="number" min="0" max="100000000000" step="100000" value={fixedIncome} onChange={e=>FI(Math.min(100000000000,Math.max(0,Number(e.target.value)||0)))}/>; if(s.key==='variable')return <input className="big-input" type="number" min="0" max="100000000000" step="100000" value={variableIncome} onChange={e=>VI(Math.min(100000000000,Math.max(0,Number(e.target.value)||0)))}/>; return <input className="big-input" type="number" min="0" max="100000000" step="1000" value={goldPrice} onChange={e=>GP(Math.min(100000000,Math.max(0,Number(e.target.value)||0)))}/>;};
+  const budgetDone=budgetStep>=budgetSteps.length;
+  const currentBudgetStep=budgetSteps[Math.min(budgetStep,budgetSteps.length-1)];
+  const budgetInput=()=>{const s=currentBudgetStep; if(s.key==='name')return <input className="big-input" type="text" value={budgetName} placeholder="Tulis nama kamu" onChange={e=>BN(e.target.value)}/>; if(s.key==='age')return <input className="big-input" type="number" min="1" max="120" value={budgetAge} onChange={e=>BA(Math.min(120,Math.max(1,Number(e.target.value)||1)))}/>; if(s.key==='fixed')return <input className="big-input" type="number" min="0" max="100000000000" step="100000" value={fixedIncome} onChange={e=>FI(Math.min(100000000000,Math.max(0,Number(e.target.value)||0)))}/>; if(s.key==='variable')return <input className="big-input" type="number" min="0" max="100000000000" step="100000" value={variableIncome} onChange={e=>VI(Math.min(100000000000,Math.max(0,Number(e.target.value)||0)))}/>; return <input className="big-input" type="number" min="0" max="100000000" step="1000" value={goldPrice} onChange={e=>GP(Math.min(100000000,Math.max(0,Number(e.target.value)||0)))}/>;};
 
   const budgetMoneyField=(label:string,v:number,set:(n:number)=>void,min:number,max:number,helper:string)=><label className="budget-money-field"><div><b>{label}</b><span>{helper}</span></div><input type="number" min={min} max={max} step="1000" value={Math.round(v)} onChange={e=>set(Math.min(max,Math.max(min,Number(e.target.value)||0)))}/></label>;
 
@@ -47,7 +49,7 @@ export default function App(){
     <aside><h2>🟩 wealthplanner</h2><p>KALKULATOR</p>{items.map(x=><button key={x[0]} className={id===x[0]?'active':''} onClick={()=>{S(x[0]);BS(0)}}>{x[1]}</button>)}</aside>
     <section><small>FINANCIAL PLANNING</small><h1>Rencanakan tujuan keuanganmu</h1><p>Simulasikan tujuan dan lihat kondisi finansialmu secara lebih terarah.</p>
       {id==='budget'?<>
-        <div className="budget-shell">
+        {!budgetDone&&<div className="budget-shell">
           <article className="budget-form">
             <div className="progress"><span style={{width:((budgetStep+1)/budgetSteps.length*100)+'%'}}/></div>
             <div className="step-count">LANGKAH {budgetStep+1} DARI {budgetSteps.length}</div>
@@ -56,8 +58,8 @@ export default function App(){
             <div className="step-actions">{budgetStep>0&&<button className="secondary" onClick={()=>BS(budgetStep-1)}>Kembali</button>}<button className="primary" onClick={()=>budgetStep<budgetSteps.length-1?BS(budgetStep+1):BS(budgetSteps.length)}>{budgetStep<budgetSteps.length-1?'Lanjut':'Lihat Anggaran'}</button></div>
           </article>
           <article className="budget-preview"><small>ANGGARAN SEMENTARA</small><h3>{budgetName||'Anggaran kamu'}</h3><strong>{money(budget.totalIncome)}</strong><p>Total pemasukan tahunan</p><div className="budget-mini"><div><span>Tetap</span><b>{money(budget.fixed)}</b></div><div><span>Tidak tetap</span><b>{money(budget.variable)}</b></div></div></article>
-        </div>
-        {budgetStep>=budgetSteps.length&&<article className="budget-report"><small>HASIL ANGGARAN KEUANGAN</small><h2>Susunan anggaran tahunan</h2><p>Usia {budgetAge} tahun · {budgetName||'Nama belum diisi'}</p>
+        </div>}
+        {budgetDone&&<article className="budget-report"><small>HASIL ANGGARAN KEUANGAN</small><h2>Susunan anggaran tahunan</h2><p>Usia {budgetAge} tahun · {budgetName||'Nama belum diisi'}</p>
           <div className="budget-table">
             <div><b>Pos Zakat</b><span>2,5% dari pemasukan</span><strong>{money(budget.zakat)}</strong></div>
             {budgetMoneyField('Pos ISWAF',budget.iswaf,IW,0,budget.limits.iswafMax,'Maks. 7,5% dari total pemasukan')}
