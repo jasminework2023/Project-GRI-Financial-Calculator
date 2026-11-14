@@ -82,3 +82,19 @@
   .gold-note{font-size:9px!important}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
+
+.report-copy{margin-top:28px;border-top:1px solid #e2ebe4;padding-top:8px}
+.report-copy section{padding:16px 0;border-bottom:1px solid #edf1ee}
+.report-copy section:last-child{border-bottom:0}
+.report-copy h4{margin:0 0 7px;font-size:14px;color:#173a2c}
+.report-copy p{margin:0;color:#64756b;font-size:12px;line-height:1.7}
+.report-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;padding-top:20px;border-top:1px solid #e2ebe4}
+.report-actions .primary,.report-actions .consult-button{min-height:44px;padding:0 20px;border-radius:12px;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+@media(max-width:640px){.report-actions{flex-direction:column}.report-actions>*{width:100%}}
+@media print{
+  .report-copy{margin-top:20px;border-top:1px solid #dfe9e2;padding-top:0}
+  .report-copy section{padding:12px 0;border-bottom:1px solid #e8eee9}
+  .report-copy h4{font-size:12px;margin-bottom:5px}
+  .report-copy p{font-size:9.5px;line-height:1.55}
+  .report-actions{display:none!important}
+}
