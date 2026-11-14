@@ -81,7 +81,10 @@ export default function App(){
           </article>
           <article className="budget-preview"><small>ANGGARAN SEMENTARA</small><h3>{budgetName||'Anggaran kamu'}</h3><strong>{money(budget.totalIncome)}</strong><p>Total pemasukan tahunan</p><div className="budget-mini"><div><span>Tetap</span><b>{money(budget.fixed)}</b></div><div><span>Tidak tetap</span><b>{money(budget.variable)}</b></div></div></article>
         </div>}
-        {budgetDone&&<article className="budget-report"><small>HASIL ANGGARAN KEUANGAN</small><h2>Susunan anggaran tahunan</h2><p>Usia {budgetAge} tahun · {budgetName||'Nama belum diisi'}</p>
+        {budgetDone&&<article className="budget-report"><small>MENYUSUN ANGGARAN KEUANGAN</small><h2>Susunan anggaran tahunan</h2>
+          <div className="budget-report-section"><h3>Data Diri</h3><div className="budget-data"><div><span>Nama</span><b>{budgetName}</b></div><div><span>Usia</span><b>{budgetAge} tahun</b></div></div></div>
+          <div className="budget-report-section"><h3>Pemasukan Tahunan</h3><p>Pemasukan kamu dibedakan antara pemasukan yang tetap dan tidak tetap untuk menjadi acuan pengeluaran yang ideal.</p><div className="budget-data"><div><span>Tetap</span><b>{money(budget.fixed)}</b></div><div><span>Tidak Tetap</span><b>{money(budget.variable)}</b></div><div className="highlight"><span>Total Pemasukan</span><b>{money(budget.totalIncome)}</b></div><div><span>Harga Per Gram Emas Saat Ini</span><b>{money(budget.goldPrice)}</b></div></div></div>
+          <div className="budget-report-section"><h3>Pengeluaran Tahunan</h3><p>Pengeluaran tahunan ini merupakan pengeluaran yang dibagi dalam pos sesuai prioritas pengelolaan keuangan.</p>
           <div className="budget-table">
             <div><b>Pos Zakat</b><span>2,5% dari pemasukan</span><strong>{money(budget.zakat)}</strong></div>
             {budgetMoneyField('Pos ISWAF',budget.iswaf,IW,0,budget.limits.iswafMax,'Maks. 7,5% dari total pemasukan')}
