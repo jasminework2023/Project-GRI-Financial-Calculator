@@ -105,3 +105,20 @@ export function financialCheckup(input:FinancialCheckupInput):CheckupResult{
 
   return {score,grade,metrics,priorities:ordered,surplus,emergencyMonths,debtRatio,savingRatio,investmentRatio,debtToAsset,netWorth,protectionGap};
 }
+
+
+export type BudgetResult={fixed:number;variable:number;totalIncome:number;zakat:number;iswaf:number;productiveDebt:number;consumerDebt:number;totalDebt:number;insurance:number;futureFund:number;currentSpending:number;totalBudget:number;surplus:number;goldPrice:number};
+
+export function financialBudget(input:{fixed:number;variable:number;goldPrice:number}):BudgetResult{
+  const fixed=safe(input.fixed),variable=safe(input.variable),totalIncome=fixed+variable;
+  const zakat=totalIncome*0.025;
+  const iswaf=totalIncome*0.075;
+  const productiveDebt=totalIncome*0.20;
+  const consumerDebt=totalIncome*0.15;
+  const totalDebt=productiveDebt+consumerDebt;
+  const insurance=totalIncome*0.10;
+  const futureFund=totalIncome*0.10;
+  const currentSpending=Math.max(0,totalIncome-zakat-iswaf-totalDebt-insurance-futureFund);
+  const totalBudget=zakat+iswaf+totalDebt+insurance+futureFund+currentSpending;
+  return {fixed,variable,totalIncome,zakat,iswaf,productiveDebt,consumerDebt,totalDebt,insurance,futureFund,currentSpending,totalBudget,surplus:totalIncome-totalBudget,goldPrice:safe(input.goldPrice)};
+}
