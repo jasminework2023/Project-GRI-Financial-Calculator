@@ -131,6 +131,12 @@ export default function App(){
             <div className="surplus"><b>Surplus</b><strong>{money(budget.surplus)}</strong></div>
           </div></div>
           <p className="gold-note">Harga emas saat ini: {money(budget.goldPrice)}/gram. Nilai ini menjadi referensi laporan dan tidak mengubah total anggaran.</p>
+          <div className="report-copy budget-report-copy">
+            <section><h4>Ringkasan Hasil</h4><p>{reportCopy.budget.summary}</p></section>
+            <section><h4>Insight Keuangan</h4><p>{reportCopy.budget.insight}</p></section>
+            <section><h4>Rekomendasi</h4><p>{reportCopy.budget.recommendation}</p></section>
+            <section><h4>Langkah Berikutnya</h4><p>{reportCopy.budget.next}</p></section>
+          </div>
           <div className="budget-report-actions">
             <button className="secondary" onClick={()=>BS(budgetSteps.length-1)}>Kembali</button>
             <button className="primary" onClick={downloadBudgetPDF}>Unduh PDF</button>
