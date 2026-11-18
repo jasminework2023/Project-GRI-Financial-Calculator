@@ -1,41 +1,57 @@
-import React,{useMemo,useState}from'react';
+import React,{useEffect,useMemo,useState}from'react';
 import{money,contribution,futureValue,mortgage,financialCheckup,financialBudget}from'./calc';
 
 const items=[['check','Financial Check-Up','Cek kondisi cash flow, utang, dana darurat, investasi, dan proteksi.'],['budget','Anggaran Keuangan','Susun anggaran tahunan berdasarkan prioritas pengelolaan keuangan.'],['kpr','KPR','Hitung estimasi cicilan rumah berdasarkan harga, DP, tenor, dan asumsi imbal hasil.'],['edu','Dana Pendidikan','Hitung kebutuhan dana pendidikan dan estimasi setoran berkala.'],['pension','Dana Pensiun','Estimasi kebutuhan dana pensiun dan target tabungan.'],['inherit','Perencanaan Warisan','Petakan aset, kewajiban, dan gambaran aset bersih.'],['hajj','Haji & Umrah','Hitung target biaya dan estimasi setoran berkala.'],['zakat','Zakat & Wakaf','Simulasi awal zakat dan perencanaan wakaf.'],['invest','Investasi','Simulasikan pertumbuhan investasi dari setoran berkala.'],['insurance','Kebutuhan Asuransi','Estimasi kebutuhan proteksi berdasarkan pengeluaran, kewajiban, dan aset.']] as const;
 
 const pageCopy:Record<string,{eyebrow:string;title:string;subtitle:string}>={
-  check:{eyebrow:'FINANCIAL CHECK-UP',title:'Cek kondisi keuanganmu',subtitle:'Lihat kesehatan cash flow, utang, dana darurat, investasi, dan proteksi secara lebih terarah.'},
-  budget:{eyebrow:'ANGGARAN KEUANGAN',title:'Susun anggaran keuanganmu',subtitle:'Atur pemasukan tahunan ke dalam pos prioritas agar pengeluaran lebih terarah.'},
-  kpr:{eyebrow:'PERENCANAAN KPR',title:'Hitung kemampuan cicilan rumahmu',subtitle:'Simulasikan cicilan berdasarkan harga rumah, uang muka, tenor, dan asumsi imbal hasil.'},
-  edu:{eyebrow:'DANA PENDIDIKAN',title:'Rencanakan dana pendidikan',subtitle:'Hitung kebutuhan dana pendidikan dan estimasi setoran yang perlu disiapkan.'},
-  pension:{eyebrow:'DANA PENSIUN',title:'Rencanakan dana pensiunmu',subtitle:'Perkirakan kebutuhan dana di masa pensiun dan target yang perlu disiapkan sejak sekarang.'},
-  inherit:{eyebrow:'PERENCANAAN WARISAN',title:'Petakan aset dan kewajibanmu',subtitle:'Lihat gambaran aset bersih sebagai langkah awal dalam perencanaan warisan.'},
-  hajj:{eyebrow:'HAJI & UMRAH',title:'Rencanakan perjalanan ibadahmu',subtitle:'Tentukan target biaya dan estimasi setoran berkala yang perlu disiapkan.'},
-  zakat:{eyebrow:'ZAKAT & WAKAF',title:'Rencanakan zakat dan wakafmu',subtitle:'Gunakan simulasi ini sebagai gambaran awal dalam menyiapkan zakat dan wakaf.'},
-  invest:{eyebrow:'INVESTASI',title:'Rencanakan pertumbuhan investasimu',subtitle:'Simulasikan potensi nilai investasi dari setoran berkala dan asumsi imbal hasil.'},
-  insurance:{eyebrow:'KEBUTUHAN ASURANSI',title:'Hitung kebutuhan proteksimu',subtitle:'Perkirakan kebutuhan uang pertanggungan berdasarkan kebutuhan keluarga, kewajiban, dan aset yang tersedia.'}
+check:{eyebrow:'FINANCIAL CHECK-UP',title:'Cek kondisi keuanganmu',subtitle:'Lihat kesehatan cash flow, utang, dana darurat, investasi, dan proteksi secara lebih terarah.'},
+budget:{eyebrow:'ANGGARAN KEUANGAN',title:'Susun anggaran keuanganmu',subtitle:'Atur pemasukan tahunan ke dalam pos prioritas agar pengeluaran lebih terarah.'},
+kpr:{eyebrow:'PERENCANAAN KPR',title:'Hitung kemampuan cicilan rumahmu',subtitle:'Simulasikan cicilan berdasarkan harga rumah, uang muka, tenor, dan asumsi imbal hasil.'},
+edu:{eyebrow:'DANA PENDIDIKAN',title:'Rencanakan dana pendidikan',subtitle:'Hitung kebutuhan dana pendidikan dan estimasi setoran yang perlu disiapkan.'},
+pension:{eyebrow:'DANA PENSIUN',title:'Rencanakan dana pensiunmu',subtitle:'Perkirakan kebutuhan dana di masa pensiun dan target yang perlu disiapkan sejak sekarang.'},
+inherit:{eyebrow:'PERENCANAAN WARISAN',title:'Petakan aset dan kewajibanmu',subtitle:'Lihat gambaran aset bersih sebagai langkah awal dalam perencanaan warisan.'},
+hajj:{eyebrow:'HAJI & UMRAH',title:'Rencanakan perjalanan ibadahmu',subtitle:'Tentukan target biaya dan estimasi setoran berkala yang perlu disiapkan.'},
+zakat:{eyebrow:'ZAKAT & WAKAF',title:'Rencanakan zakat dan wakafmu',subtitle:'Gunakan simulasi ini sebagai gambaran awal dalam menyiapkan zakat dan wakaf.'},
+invest:{eyebrow:'INVESTASI',title:'Rencanakan pertumbuhan investasimu',subtitle:'Simulasikan potensi nilai investasi dari setoran berkala dan asumsi imbal hasil.'},
+insurance:{eyebrow:'KEBUTUHAN ASURANSI',title:'Hitung kebutuhan proteksimu',subtitle:'Perkirakan kebutuhan uang pertanggungan berdasarkan kebutuhan keluarga, kewajiban, dan aset yang tersedia.'}
 };
-const reportCopy:Record<string,{summary:string;insight:string;recommendation:string;next:string}>={
-  check:{summary:'Gunakan skor ini sebagai gambaran awal kesehatan keuanganmu. Hasil dibentuk dari cash flow, utang, dana darurat, investasi, leverage, dan proteksi.',insight:'Perhatikan indikator dengan skor terendah karena area tersebut menjadi prioritas perbaikan dalam simulasi ini.',recommendation:'Perkuat fondasi keuangan secara bertahap: jaga surplus, bangun dana darurat, kendalikan utang, dan sesuaikan proteksi dengan tanggungan.',next:'Review kembali hasil ini ketika pemasukan, pengeluaran, utang, aset, atau kebutuhan proteksimu berubah.'},
-  kpr:{summary:'Simulasi ini memperkirakan cicilan bulanan berdasarkan harga rumah, uang muka, tenor, dan asumsi imbal hasil yang kamu masukkan.',insight:'Bandingkan cicilan dengan cash flow bulananmu. Kemampuan membayar bukan hanya soal lolos simulasi, tetapi juga menjaga ruang untuk kebutuhan lain.',recommendation:'Pastikan uang muka, cicilan, biaya kepemilikan, dan dana darurat tetap sesuai dengan kemampuan cash flow.',next:'Gunakan hasil ini sebagai bahan awal sebelum membandingkan skenario harga rumah, DP, dan tenor.'},
-  edu:{summary:'Simulasi ini memperkirakan target dana pendidikan berdasarkan biaya saat ini, jangka waktu, inflasi, dan asumsi imbal hasil.',insight:'Semakin panjang waktu persiapan, semakin besar ruang untuk membangun dana secara bertahap.',recommendation:'Tentukan target pendidikan yang realistis, mulai menyiapkan dana secara berkala, dan review asumsi ketika kondisi berubah.',next:'Bandingkan beberapa skenario biaya, waktu, dan imbal hasil sebelum menentukan target kontribusi.'},
-  pension:{summary:'Simulasi ini memberikan gambaran sederhana mengenai kebutuhan dana pensiun berdasarkan pengeluaran, jangka waktu, inflasi, dan asumsi yang kamu masukkan.',insight:'Kebutuhan pensiun dipengaruhi oleh gaya hidup yang ingin dipertahankan dan berapa lama dana perlu menopang masa pensiun.',recommendation:'Mulai membangun dana pensiun sedini mungkin dan sesuaikan kontribusi secara berkala dengan perkembangan penghasilan.',next:'Review target ketika usia, penghasilan, gaya hidup, atau asumsi inflasi berubah.'},
-  inherit:{summary:'Simulasi ini memetakan aset dan kewajiban untuk memberikan gambaran awal mengenai aset bersih yang tersedia.',insight:'Aset bersih bukan hanya tentang jumlah aset, tetapi juga kewajiban yang masih melekat di dalamnya.',recommendation:'Rapikan pencatatan aset dan kewajiban, lalu lanjutkan dengan perencanaan warisan sesuai kebutuhan dan ketentuan yang berlaku.',next:'Untuk pembagian warisan, gunakan pendampingan profesional yang sesuai dengan hukum dan ketentuan yang relevan.'},
-  hajj:{summary:'Simulasi ini membantu memperkirakan target dana Haji atau Umrah dan kebutuhan setoran berdasarkan jangka waktu serta asumsi yang digunakan.',insight:'Target yang jelas membantu menentukan berapa dana yang perlu disiapkan secara berkala tanpa mengganggu kebutuhan utama.',recommendation:'Pisahkan dana tujuan ibadah dari kebutuhan rutin dan review target secara berkala mengikuti perubahan biaya.',next:'Bandingkan beberapa jangka waktu dan skenario setoran sebelum menetapkan target.'},
-  zakat:{summary:'Simulasi ini memberikan estimasi awal zakat maal dari nilai harta yang kamu masukkan.',insight:'Perhitungan zakat dapat bergantung pada jenis harta, nisab, haul, dan ketentuan yang kamu ikuti.',recommendation:'Gunakan hasil ini sebagai simulasi awal dan pastikan perhitungan akhir disesuaikan dengan kondisi harta serta ketentuan yang relevan.',next:'Untuk kepastian perhitungan, konfirmasikan kepada lembaga atau ahli zakat yang kompeten.'},
-  invest:{summary:'Simulasi ini memperkirakan nilai investasi di masa depan berdasarkan setoran berkala, jangka waktu, dan asumsi imbal hasil.',insight:'Hasil akhir sangat dipengaruhi oleh konsistensi setoran, waktu, dan asumsi imbal hasil yang digunakan.',recommendation:'Fokus pada tujuan, jangka waktu, kemampuan cash flow, dan tingkat risiko sebelum menentukan strategi investasi.',next:'Bandingkan skenario kontribusi dan jangka waktu untuk melihat dampaknya terhadap target.'},
-  insurance:{summary:'Simulasi ini memberikan estimasi kebutuhan proteksi berdasarkan pengeluaran, kewajiban, aset likuid, dan jangka waktu dukungan yang kamu masukkan.',insight:'Kebutuhan proteksi sebaiknya dilihat dari dampak finansial yang perlu ditutup jika risiko terjadi, bukan hanya dari premi.',recommendation:'Evaluasi kebutuhan uang pertanggungan terhadap penghasilan, tanggungan, kewajiban, dan aset yang sudah tersedia.',next:'Gunakan hasil ini sebagai titik awal untuk membahas struktur proteksi yang sesuai dengan kondisi keuanganmu.'},
-  budget:{summary:'Laporan ini menyusun pemasukan tahunan ke dalam pos prioritas agar pengeluaran dan alokasi dana lebih terarah.',insight:'Anggaran yang baik membantu memastikan kebutuhan saat ini, perlindungan, dan tujuan masa depan mendapatkan porsi yang seimbang.',recommendation:'Review setiap pos secara berkala dan sesuaikan alokasi ketika pemasukan atau kebutuhan berubah.',next:'Gunakan laporan ini sebagai acuan awal untuk mengevaluasi kebiasaan pengelolaan keuanganmu.'}
+
+const reportCopy:Record<string,{summary:string;insight:string;recommendation:string;next:string;protection:string}>={
+check:{summary:'Gunakan skor ini sebagai gambaran awal kesehatan keuanganmu. Hasil dibentuk dari cash flow, utang, dana darurat, investasi, leverage, dan proteksi.',insight:'Prioritas di bawah ini mengikuti indikator dengan skor terendah pada simulasi, sehingga area perbaikan dapat dilihat lebih jelas.',recommendation:'Perkuat fondasi secara bertahap: jaga surplus, bangun dana darurat, kendalikan utang, dan sesuaikan proteksi dengan tanggungan.',next:'Review hasil ketika pemasukan, pengeluaran, utang, aset, atau kebutuhan proteksimu berubah.',protection:'Kesehatan keuangan tidak hanya diukur dari aset yang terkumpul. Dana darurat dan proteksi membantu menjaga cash flow serta tujuan keluarga ketika terjadi risiko kehidupan.'},
+budget:{summary:'Laporan ini menyusun pemasukan tahunan ke dalam pos prioritas agar kebutuhan saat ini, perlindungan, dan tujuan masa depan mendapatkan alokasi yang lebih terarah.',insight:'Perhatikan besarnya surplus setelah seluruh pos. Surplus yang konsisten memberi ruang untuk dana darurat, tujuan jangka panjang, dan penyesuaian ketika pemasukan berubah.',recommendation:'Review setiap pos secara berkala dan sesuaikan alokasi ketika pemasukan atau kebutuhan berubah. Hindari menganggap batas alokasi sebagai angka yang pasti cocok untuk semua kondisi.',next:'Gunakan laporan ini sebagai acuan awal untuk mengevaluasi kebiasaan pengelolaan keuanganmu.',protection:'Anggaran yang sehat sebaiknya tidak hanya membayar kebutuhan rutin. Sisihkan ruang untuk dana darurat dan kontribusi perlindungan agar tujuan finansial tidak terlalu rentan terhadap gangguan penghasilan.'},
+kpr:{summary:'Simulasi ini memperkirakan cicilan bulanan berdasarkan harga rumah, uang muka, tenor, dan asumsi imbal hasil yang kamu masukkan.',insight:'Semakin besar pinjaman atau semakin pendek tenor, semakin besar beban cicilan bulanan. Hasil simulasi perlu dibaca bersama kemampuan cash flow, bukan berdiri sendiri.',recommendation:'Pastikan uang muka, cicilan, biaya kepemilikan, dan dana darurat tetap sesuai dengan kemampuan cash flow.',next:'Bandingkan beberapa skenario harga rumah, DP, tenor, dan asumsi sebelum mengambil keputusan pembiayaan.',protection:'Kewajiban KPR berlangsung bertahun-tahun. Perencanaan juga perlu mempertimbangkan bagaimana keluarga dapat menjaga pembayaran apabila sumber penghasilan utama terganggu oleh risiko kehidupan.'},
+edu:{summary:'Simulasi ini memperkirakan target dana pendidikan berdasarkan biaya saat ini, jangka waktu, inflasi, dan asumsi imbal hasil yang kamu masukkan.',insight:'Target dana dipengaruhi oleh biaya awal, inflasi, dan waktu persiapan. Semakin panjang waktu yang tersedia, semakin besar ruang untuk membangun dana secara bertahap.',recommendation:'Tentukan target pendidikan yang realistis, mulai menyiapkan dana secara berkala, dan review asumsi ketika kondisi berubah.',next:'Bandingkan beberapa skenario biaya, waktu, dan imbal hasil sebelum menetapkan target kontribusi.',protection:'Dana pendidikan adalah tujuan jangka panjang yang dapat terdampak jika pencari nafkah kehilangan kemampuan menghasilkan pendapatan. Selain menabung dan berinvestasi, pertimbangkan bagaimana target tetap berjalan ketika terjadi risiko.'},
+pension:{summary:'Simulasi ini memberikan gambaran sederhana mengenai kebutuhan dana pensiun berdasarkan pengeluaran, jangka waktu, inflasi, dan asumsi yang kamu masukkan.',insight:'Kebutuhan pensiun dipengaruhi oleh gaya hidup yang ingin dipertahankan dan berapa lama dana perlu menopang masa pensiun. Inflasi juga membuat kebutuhan masa depan berbeda dari pengeluaran hari ini.',recommendation:'Mulai membangun dana pensiun sedini mungkin dan sesuaikan kontribusi secara berkala dengan perkembangan penghasilan.',next:'Review target ketika usia, penghasilan, gaya hidup, atau asumsi inflasi berubah.',protection:'Persiapan pensiun perlu mempertimbangkan keberlanjutan penghasilan dan biaya kesehatan. Proteksi dapat menjadi salah satu bagian dari strategi menjaga aset pensiun agar tidak cepat tergerus oleh risiko besar.'},
+inherit:{summary:'Simulasi ini memetakan aset dan kewajiban untuk memberikan gambaran awal mengenai aset bersih yang tersedia.',insight:'Aset bersih bukan hanya tentang jumlah aset, tetapi juga kewajiban yang masih melekat. Likuiditas juga penting ketika keluarga membutuhkan dana dalam waktu singkat.',recommendation:'Rapikan pencatatan aset dan kewajiban, dokumentasikan kepemilikan, lalu lanjutkan dengan perencanaan warisan sesuai kebutuhan dan ketentuan yang berlaku.',next:'Untuk pembagian warisan, gunakan pendampingan profesional yang sesuai dengan hukum dan ketentuan yang relevan.',protection:'Perencanaan warisan tidak berhenti pada pembagian aset. Likuiditas, kewajiban, dan perlindungan keluarga perlu diperhatikan agar keluarga tidak terpaksa menjual aset secara terburu-buru ketika terjadi risiko.'},
+hajj:{summary:'Simulasi ini membantu memperkirakan target dana Haji atau Umrah dan kebutuhan setoran berdasarkan jangka waktu serta asumsi yang digunakan.',insight:'Target yang jelas membantu menentukan berapa dana yang perlu disiapkan secara berkala tanpa mengganggu kebutuhan utama.',recommendation:'Pisahkan dana tujuan ibadah dari kebutuhan rutin dan review target secara berkala mengikuti perubahan biaya.',next:'Bandingkan beberapa jangka waktu dan skenario setoran sebelum menetapkan target.',protection:'Persiapan dana ibadah sebaiknya berjalan berdampingan dengan ketahanan keuangan keluarga. Pastikan kebutuhan pokok, dana darurat, dan perlindungan tidak terabaikan demi mengejar satu tujuan.'},
+zakat:{summary:'Simulasi ini memberikan estimasi awal zakat maal dari nilai harta yang kamu masukkan.',insight:'Perhitungan zakat dapat bergantung pada jenis harta, nisab, haul, dan ketentuan yang kamu ikuti. Angka pada laporan ini adalah hasil simulasi, bukan penetapan kewajiban final.',recommendation:'Gunakan hasil ini sebagai simulasi awal dan pastikan perhitungan akhir disesuaikan dengan kondisi harta serta ketentuan yang relevan.',next:'Untuk kepastian perhitungan, konfirmasikan kepada lembaga atau ahli zakat yang kompeten.',protection:'Menunaikan kewajiban sosial perlu berjalan bersama pengelolaan likuiditas yang sehat. Pastikan kewajiban, kebutuhan keluarga, dan keberlanjutan kemampuan finansial tetap diperhitungkan.'},
+invest:{summary:'Simulasi ini memperkirakan nilai investasi di masa depan berdasarkan setoran berkala, jangka waktu, dan asumsi imbal hasil.',insight:'Hasil akhir sangat dipengaruhi oleh konsistensi setoran, waktu, dan asumsi imbal hasil. Nilai simulasi bukan jaminan hasil investasi aktual.',recommendation:'Fokus pada tujuan, jangka waktu, kemampuan cash flow, dan tingkat risiko sebelum menentukan strategi investasi.',next:'Bandingkan skenario kontribusi dan jangka waktu untuk melihat dampaknya terhadap target.',protection:'Investasi bertujuan membangun aset, tetapi kondisi finansial juga perlu dilindungi dari risiko besar. Jangan menempatkan seluruh kapasitas finansial pada investasi sampai kebutuhan likuiditas dan perlindungan terabaikan.'},
+insurance:{summary:'Simulasi ini memberikan estimasi kebutuhan proteksi berdasarkan pengeluaran, kewajiban, aset likuid, dan jangka waktu dukungan yang kamu masukkan.',insight:'Kebutuhan proteksi sebaiknya dilihat dari dampak finansial yang perlu ditutup jika risiko terjadi, bukan hanya dari premi. Aset likuid dapat mengurangi kebutuhan proteksi, tetapi juga perlu tersedia untuk kebutuhan lain.',recommendation:'Evaluasi kebutuhan uang pertanggungan terhadap penghasilan, tanggungan, kewajiban, dan aset yang sudah tersedia.',next:'Gunakan hasil ini sebagai titik awal untuk membahas struktur proteksi yang sesuai dengan kondisi keuanganmu.',protection:'Proteksi adalah bagian dari manajemen risiko. Tujuannya bukan membuat seseorang pasti membutuhkan produk tertentu, tetapi membantu mengurangi dampak finansial dari risiko yang relevan dengan kondisi keluarga.'}
 };
 
 type BudgetStep={key:'name'|'age'|'fixed'|'variable'|'gold';label:string;hint:string};
 const budgetSteps:BudgetStep[]=[
-  {key:'name',label:'Siapa nama kamu?',hint:'Data ini hanya untuk laporan simulasi.'},
-  {key:'age',label:'Berapa usia kamu?',hint:'Masukkan usia saat ini.'},
-  {key:'fixed',label:'Berapa pemasukan tetap per tahun?',hint:'Gaji, honor tetap, atau penghasilan rutin yang relatif pasti.'},
-  {key:'variable',label:'Berapa pemasukan tidak tetap per tahun?',hint:'Bonus, komisi, freelance, THR, atau penghasilan yang tidak selalu diterima.'},
-  {key:'gold',label:'Berapa harga emas per gram saat ini?',hint:'Dicatat sebagai referensi laporan anggaran.'}
+{key:'name',label:'Siapa nama kamu?',hint:'Data ini digunakan untuk laporan simulasi.'},
+{key:'age',label:'Berapa usia kamu?',hint:'Masukkan usia saat ini.'},
+{key:'fixed',label:'Berapa pemasukan tetap per tahun?',hint:'Gaji, honor tetap, atau penghasilan rutin yang relatif pasti.'},
+{key:'variable',label:'Berapa pemasukan tidak tetap per tahun?',hint:'Bonus, komisi, freelance, THR, atau penghasilan yang tidak selalu diterima.'},
+{key:'gold',label:'Berapa harga emas per gram saat ini?',hint:'Dicatat sebagai referensi laporan anggaran.'}
 ];
+
+const readStoredName=()=>{
+  try{
+    const params=new URLSearchParams(window.location.search);
+    const fromUrl=params.get('name');
+    if(fromUrl)return fromUrl;
+    for(const key of ['wealthplanner_user_name','userName','name','profileName']){
+      const value=localStorage.getItem(key);
+      if(value?.trim())return value.trim();
+    }
+  }catch{}
+  return '';
+};
+
+const Bar=({label,value,max=100,display}:{label:string;value:number;max?:number;display:string})=><div className="report-bar"><div><span>{label}</span><b>{display}</b></div><i><em style={{width:Math.max(0,Math.min(100,(value/max)*100))+'%'}}/></i></div>;
 
 export default function App(){
   const[id,S]=useState('check');
@@ -46,21 +62,33 @@ export default function App(){
   const[assets,A]=useState(300000000),[debt,B]=useState(100000000),[protection,PR]=useState(1000000000),[dependents,DE]=useState(1),[monthly,M]=useState(2000000);
   const[budgetStep,BS]=useState(0),[budgetName,BN]=useState(''),[budgetAge,BA]=useState(0),[fixedIncome,FI]=useState(0),[variableIncome,VI]=useState(0),[goldPrice,GP]=useState(0);
   const[iswaf,IW]=useState(0),[productiveDebt,PD]=useState(0),[consumerDebt,CD]=useState(0),[insurance,INS]=useState(0),[futureFund,FF]=useState(0),[currentSpending,CS]=useState(0);
+  const[reportName,RN]=useState('');
+
+  useEffect(()=>{RN(readStoredName())},[]);
+  useEffect(()=>{if(reportName.trim())try{localStorage.setItem('wealthplanner_user_name',reportName.trim())}catch{}},[reportName]);
 
   const checkup=useMemo(()=>financialCheckup({income,expense,debtPayment,emergencyFund:emergency,liquidAssets:liquid,investments,totalAssets:assets,totalDebt:debt,protection,dependents}),[income,expense,debtPayment,emergency,liquid,investments,assets,debt,protection,dependents]);
   const budget=useMemo(()=>financialBudget({fixed:fixedIncome,variable:variableIncome,goldPrice,iswaf,productiveDebt,consumerDebt,insurance,futureFund,currentSpending}),[fixedIncome,variableIncome,goldPrice,iswaf,productiveDebt,consumerDebt,insurance,futureFund,currentSpending]);
   const months=years*12,annual=rate/100,goal=target*Math.pow(1+infl/100,years);
-  let title='',value='',sub='Estimasi indikatif berdasarkan asumsi input.';
+  const investmentResult=useMemo(()=>futureValue(monthly,annual,months),[monthly,annual,months]);
+  const mortgageResult=useMemo(()=>mortgage(Math.max(0,price-dp),annual,years),[price,dp,annual,years]);
+  const educationContribution=useMemo(()=>contribution(goal,annual,months),[goal,annual,months]);
+  const pensionMonthly=Math.max(0,expense*Math.pow(1+infl/100,years));
+  const pensionTarget=pensionMonthly*12*20;
+  const inheritanceNetWorth=Math.max(0,liquid+price-debt);
+  const zakatEstimate=liquid*.025;
+  const insuranceNeed=Math.max(0,expense*12*years+debt-liquid);
 
-  if(id==='budget'){title='Total pemasukan tahunan';value=money(budget.totalIncome);sub='Pemasukan tetap + tidak tetap.';}
-  else if(id==='kpr'){title='Estimasi cicilan bulanan';value=money(mortgage(Math.max(0,price-dp),annual,years));}
-  else if(id==='check'){title='Financial Health Score';value=checkup.score+'/100';sub=checkup.grade+' · Prioritas ditentukan oleh rule-based DSS.';}
-  else if(id==='invest'){title='Estimasi nilai akhir';value=money(futureValue(monthly,annual,months));}
-  else if(id==='inherit'){title='Estimasi aset bersih';value=money(Math.max(0,liquid+price-debt));sub='Bukan penetapan pembagian faraid.'}
-  else if(id==='zakat'){title='Estimasi zakat maal 2,5%';value=money(liquid*.025);sub='Periksa nisab, haul, jenis aset, dan ketentuan yang diikuti.'}
-  else if(id==='insurance'){title='Estimasi kebutuhan proteksi';value=money(Math.max(0,expense*12*years+debt-liquid));}
-  else if(id==='pension'){title='Target modal pensiun sederhana';value=money(expense*Math.pow(1+infl/100,years)*12*20);}
-  else{title='Target dana masa depan';value=money(goal);sub='Estimasi setoran bulanan: '+money(contribution(goal,annual,months));}
+  let title='',value='',sub='Estimasi indikatif berdasarkan asumsi input.';
+  if(id==='budget'){title='Total pemasukan tahunan';value=money(budget.totalIncome);sub='Pemasukan tetap + tidak tetap.'}
+  else if(id==='kpr'){title='Estimasi cicilan bulanan';value=money(mortgageResult)}
+  else if(id==='check'){title='Financial Health Score';value=checkup.score+'/100';sub=checkup.grade+' · Prioritas ditentukan oleh rule-based DSS.'}
+  else if(id==='invest'){title='Estimasi nilai akhir';value=money(investmentResult)}
+  else if(id==='inherit'){title='Estimasi aset bersih';value=money(inheritanceNetWorth);sub='Bukan penetapan pembagian faraid.'}
+  else if(id==='zakat'){title='Estimasi zakat maal 2,5%';value=money(zakatEstimate);sub='Periksa nisab, haul, jenis aset, dan ketentuan yang diikuti.'}
+  else if(id==='insurance'){title='Estimasi kebutuhan proteksi';value=money(insuranceNeed)}
+  else if(id==='pension'){title='Target modal pensiun sederhana';value=money(pensionTarget)}
+  else{title='Target dana masa depan';value=money(goal);sub='Estimasi setoran bulanan: '+money(educationContribution)}
 
   const field=(label:string,v:number,set:(n:number)=>void)=><label>{label}<input type="number" min="0" value={v} onChange={e=>set(Math.max(0,Number(e.target.value)||0))}/></label>;
   const statusLabel=(s:string)=>s==='healthy'?'Sehat':s==='watch'?'Perhatian':'Prioritas';
@@ -69,10 +97,10 @@ export default function App(){
   const parseIDR=(raw:string)=>Number((raw||'').replace(/\D/g,''))||0;
   const formatIDRInput=(n:number)=>n?Math.round(n).toLocaleString('id-ID'):'';
   const budgetStepValid=()=>{
-    if(currentBudgetStep.key==='name') return budgetName.trim().length>=2;
-    if(currentBudgetStep.key==='age') return budgetAge>=1&&budgetAge<=120;
-    if(currentBudgetStep.key==='fixed') return fixedIncome>0;
-    if(currentBudgetStep.key==='variable') return variableIncome>=0&&fixedIncome>0;
+    if(currentBudgetStep.key==='name')return budgetName.trim().length>=2;
+    if(currentBudgetStep.key==='age')return budgetAge>=1&&budgetAge<=120;
+    if(currentBudgetStep.key==='fixed')return fixedIncome>0;
+    if(currentBudgetStep.key==='variable')return variableIncome>=0&&fixedIncome>0;
     return goldPrice>0;
   };
   const budgetInput=()=>{
@@ -83,84 +111,88 @@ export default function App(){
     if(s.key==='variable')return <input className="big-input" type="text" inputMode="numeric" value={formatIDRInput(variableIncome)} placeholder="Rp 0" onChange={e=>VI(Math.min(100000000000,parseIDR(e.target.value)))}/>;
     return <input className="big-input" type="text" inputMode="numeric" value={formatIDRInput(goldPrice)} placeholder="Rp 0" onChange={e=>GP(Math.min(100000000,parseIDR(e.target.value)))}/>;
   };
-
   const budgetMoneyField=(label:string,v:number,set:(n:number)=>void,min:number,max:number,helper:string)=><label className="budget-money-field"><div><b>{label}</b><span>{helper}</span></div><input type="text" inputMode="numeric" value={formatIDRInput(v)} placeholder="Rp 0" onChange={e=>set(Math.min(max,Math.max(min,parseIDR(e.target.value))))}/></label>;
-
-  const downloadBudgetPDF=()=>{
+  const downloadPDF=()=>{
     const oldTitle=document.title;
-    document.title=`Laporan Anggaran Keuangan - ${budgetName||'Wealthplanner'}`;
+    document.title=`Wealth Planner Indonesia - ${pageCopy[id].eyebrow}`;
     window.print();
     window.setTimeout(()=>{document.title=oldTitle},500);
   };
+  const effectiveName=(id==='budget'&&budgetName.trim())?budgetName.trim():(reportName.trim()||'Pengguna Wealth Planner');
+
+  const reportData=()=>{
+    if(id==='check')return {headline:'Financial Health Score',value:checkup.score+'/100',caption:checkup.grade,summaryValue:money(checkup.netWorth),summaryLabel:'Estimasi aset bersih',bars:checkup.metrics.map(m=>({label:m.label,value:m.score,display:m.score+'/100'})),detail:<><div className="report-table">{checkup.metrics.map(m=><div key={m.key}><span>{m.label}</span><b>{m.value.toFixed(1)}{m.unit}</b><em>{statusLabel(m.status)}</em></div>)}</div><div className="report-highlight"><span>Gap proteksi indikatif</span><b>{money(checkup.protectionGap)}</b></div></>,chartTitle:'Indikator kesehatan keuangan',chart:<div className="report-bars">{checkup.metrics.map(m=><Bar key={m.key} label={m.label} value={m.score} display={m.score+'/100'}/>)}</div>};
+    if(id==='budget')return {headline:'Total pemasukan tahunan',value:money(budget.totalIncome),caption:'Pemasukan tetap + tidak tetap',summaryValue:money(budget.surplus),summaryLabel:'Surplus simulasi',bars:[['Zakat',budget.zakat],['ISWAF',budget.iswaf],['Utang',budget.totalDebt],['Asuransi Syariah',budget.insurance],['Dana Masa Depan',budget.futureFund],['Belanja Sekarang',budget.currentSpending]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Pemasukan tetap',budget.fixed],['Pemasukan tidak tetap',budget.variable],['Zakat',budget.zakat],['ISWAF',budget.iswaf],['Utang produktif',budget.productiveDebt],['Utang konsumtif',budget.consumerDebt],['Kontribusi Asuransi Syariah',budget.insurance],['Dana Masa Depan',budget.futureFund],['Belanja Sekarang',budget.currentSpending],['Total Anggaran',budget.totalBudget],['Surplus',budget.surplus]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{money(Number(v))}</b></div>)}</div>,chartTitle:'Komposisi alokasi tahunan',chart:<div className="report-bars">{[['Zakat',budget.zakat],['ISWAF',budget.iswaf],['Utang',budget.totalDebt],['Asuransi Syariah',budget.insurance],['Dana Masa Depan',budget.futureFund],['Belanja Sekarang',budget.currentSpending]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(1,budget.totalIncome)} display={money(Number(v))}/>)}</div>};
+    if(id==='kpr')return {headline:'Estimasi cicilan bulanan',value:money(mortgageResult),caption:`${years} tahun · bunga/asumsi ${rate}%`,summaryValue:money(Math.max(0,price-dp)),summaryLabel:'Pokok pembiayaan',bars:[['Uang muka',dp],['Pembiayaan',Math.max(0,price-dp)]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Harga rumah',price],['Uang muka',dp],['Pokok pembiayaan',Math.max(0,price-dp)],['Tenor',years+' tahun'],['Asumsi imbal hasil',rate+'%'],['Estimasi cicilan bulanan',mortgageResult]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{typeof v==='number'?money(v):v}</b></div>)}</div>,chartTitle:'Struktur pembiayaan',chart:<div className="report-bars">{[['Uang muka',dp],['Pembiayaan',Math.max(0,price-dp)]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(1,price)} display={money(Number(v))}/>)}</div>};
+    if(id==='edu')return {headline:'Target dana pendidikan',value:money(goal),caption:`${years} tahun · inflasi ${infl}% · asumsi ${rate}%`,summaryValue:money(educationContribution),summaryLabel:'Estimasi setoran bulanan',bars:[...Array(Math.min(5,years)).keys()].map(i=>({label:'Tahun '+(i+1),value:target*Math.pow(1+infl/100,i),display:money(target*Math.pow(1+infl/100,i))})),detail:<div className="report-table">{[['Biaya/target saat ini',target],['Target setelah inflasi',goal],['Jangka waktu',years+' tahun'],['Inflasi',infl+'%'],['Asumsi imbal hasil',rate+'%'],['Estimasi setoran bulanan',educationContribution]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{typeof v==='number'?money(v):v}</b></div>)}</div>,chartTitle:'Ilustrasi kenaikan target',chart:<div className="report-bars">{[0,Math.max(1,Math.floor(years/4)),Math.max(2,Math.floor(years/2)),Math.max(3,Math.floor(years*.75)),years].map((y,i)=>{const val=target*Math.pow(1+infl/100,y);return <Bar key={i} label={'Tahun '+y} value={val} max={Math.max(goal,target)} display={money(val)}/>})}</div>};
+    if(id==='pension')return {headline:'Target modal pensiun sederhana',value:money(pensionTarget),caption:`${years} tahun menuju pensiun · inflasi ${infl}%`,summaryValue:money(pensionMonthly),summaryLabel:'Kebutuhan bulanan di tahun target',bars:[['Pengeluaran hari ini',expense],['Kebutuhan bulanan target',pensionMonthly]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Pengeluaran bulanan saat ini',expense],['Jangka waktu',years+' tahun'],['Inflasi',infl+'%'],['Kebutuhan bulanan di tahun target',pensionMonthly],['Estimasi modal pensiun 20 tahun',pensionTarget]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{typeof v==='number'?money(v):v}</b></div>)}</div>,chartTitle:'Perubahan kebutuhan bulanan',chart:<div className="report-bars">{[['Saat ini',expense],['Tahun target',pensionMonthly]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(expense,pensionMonthly)} display={money(Number(v))}/>)}</div>};
+    if(id==='inherit')return {headline:'Estimasi aset bersih',value:money(inheritanceNetWorth),caption:'Aset dikurangi kewajiban',summaryValue:money(debt),summaryLabel:'Total kewajiban',bars:[['Aset likuid',liquid],['Aset lain',price],['Kewajiban',debt]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Aset likuid',liquid],['Aset lain',price],['Total aset',liquid+price],['Kewajiban',debt],['Aset bersih',inheritanceNetWorth]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{money(Number(v))}</b></div>)}</div>,chartTitle:'Komposisi aset dan kewajiban',chart:<div className="report-bars">{[['Aset likuid',liquid],['Aset lain',price],['Kewajiban',debt]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(1,liquid+price)} display={money(Number(v))}/>)}</div>};
+    if(id==='hajj')return {headline:'Target dana masa depan',value:money(goal),caption:`${years} tahun · inflasi ${infl}% · asumsi ${rate}%`,summaryValue:money(educationContribution),summaryLabel:'Estimasi setoran bulanan',bars:[['Target saat ini',target],['Target setelah inflasi',goal]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Biaya/target saat ini',target],['Target setelah inflasi',goal],['Jangka waktu',years+' tahun'],['Inflasi',infl+'%'],['Asumsi imbal hasil',rate+'%'],['Estimasi setoran bulanan',educationContribution]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{typeof v==='number'?money(v):v}</b></div>)}</div>,chartTitle:'Target dana',chart:<div className="report-bars">{[['Saat ini',target],['Target masa depan',goal]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(1,goal)} display={money(Number(v))}/>)}</div>};
+    if(id==='zakat')return {headline:'Estimasi zakat maal',value:money(zakatEstimate),caption:'2,5% dari harta simulasi yang dimasukkan',summaryValue:money(liquid),summaryLabel:'Harta simulasi',bars:[['Harta simulasi',liquid],['Estimasi zakat 2,5%',zakatEstimate]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Harta simulasi zakat',liquid],['Tarif simulasi','2,5%'],['Estimasi zakat maal',zakatEstimate]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{typeof v==='number'?money(v):v}</b></div>)}</div>,chartTitle:'Gambaran kewajiban simulasi',chart:<div className="report-bars">{[['Harta simulasi',liquid],['Zakat simulasi',zakatEstimate]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(1,liquid)} display={money(Number(v))}/>)}</div>};
+    if(id==='invest')return {headline:'Estimasi nilai akhir investasi',value:money(investmentResult),caption:`${years} tahun · asumsi imbal hasil ${rate}%`,summaryValue:money(monthly*months),summaryLabel:'Total setoran',bars:[['Total setoran',monthly*months],['Nilai akhir',investmentResult]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Setoran bulanan',monthly],['Jangka waktu',years+' tahun'],['Asumsi imbal hasil',rate+'%'],['Total setoran',monthly*months],['Estimasi nilai akhir',investmentResult],['Estimasi pertumbuhan',investmentResult-monthly*months]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{typeof v==='number'?money(v):v}</b></div>)}</div>,chartTitle:'Setoran vs nilai akhir',chart:<div className="report-bars">{[['Total setoran',monthly*months],['Nilai akhir',investmentResult]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(1,investmentResult)} display={money(Number(v))}/>)}</div>};
+    return {headline:'Estimasi kebutuhan proteksi',value:money(insuranceNeed),caption:`${years} tahun dukungan · berdasarkan input pengeluaran, kewajiban, dan aset likuid`,summaryValue:money(liquid),summaryLabel:'Aset likuid yang diperhitungkan',bars:[['Kebutuhan bruto',expense*12*years+debt],['Aset likuid',liquid],['Estimasi kebutuhan proteksi',insuranceNeed]].map(([label,v])=>({label:String(label),value:Number(v),display:money(Number(v))})),detail:<div className="report-table">{[['Pengeluaran bulanan',expense],['Tahun dukungan',years+' tahun'],['Kewajiban',debt],['Aset likuid',liquid],['Kebutuhan bruto',expense*12*years+debt],['Estimasi kebutuhan proteksi',insuranceNeed]].map(([label,v])=><div key={String(label)}><span>{label}</span><b>{typeof v==='number'?money(v):v}</b></div>)}</div>,chartTitle:'Kebutuhan dan aset yang diperhitungkan',chart:<div className="report-bars">{[['Kebutuhan bruto',expense*12*years+debt],['Aset likuid',liquid],['Gap proteksi',insuranceNeed]].map(([label,v])=><Bar key={String(label)} label={String(label)} value={Number(v)} max={Math.max(1,expense*12*years+debt)} display={money(Number(v))}/>)}</div>};
+  };
+
+  const report=reportData();
 
   return <main>
     <aside><h2>🟩 wealthplanner</h2><p>KALKULATOR</p>{items.map(x=><button key={x[0]} className={id===x[0]?'active':''} onClick={()=>{S(x[0]);BS(0)}}>{x[1]}</button>)}</aside>
     <section>
-      <div className="print-header"><strong>wealthplanner</strong><span>Laporan Simulasi Keuangan</span><b>{items.find(x=>x[0]===id)?.[1]}</b></div>
+      <div className="print-header"><strong>wealthplanner</strong><span>Personal Financial Report</span><b>{items.find(x=>x[0]===id)?.[1]}</b></div>
       <small>{pageCopy[id].eyebrow}</small><h1>{pageCopy[id].title}</h1><p>{pageCopy[id].subtitle}</p>
       {id==='budget'?<>
         {!budgetDone&&<div className="budget-shell">
           <article className="budget-form">
             <div className="progress"><span style={{width:((budgetStep+1)/budgetSteps.length*100)+'%'}}/></div>
             <div className="step-count">LANGKAH {budgetStep+1} DARI {budgetSteps.length}</div>
-            <h2>{budgetSteps[budgetStep].label}</h2><p>{budgetSteps[budgetStep].hint}</p>
-            {budgetInput()}
-            <div className="step-actions">{budgetStep>0&&<button className="secondary" onClick={()=>BS(budgetStep-1)}>Kembali</button>}<button className="primary" disabled={!budgetStepValid()} onClick={()=>{
-              if(budgetStep<budgetSteps.length-1){BS(budgetStep+1);return}
-              const ti=fixedIncome+variableIncome;
-              PD(Math.round(ti*.20)); CD(Math.round(ti*.15)); INS(Math.round(ti*.10)); FF(Math.round(ti*.10));
-              CS(Math.max(0,ti-Math.round(ti*.20)-Math.round(ti*.15)-Math.round(ti*.10)-Math.round(ti*.10)));
-              BS(budgetSteps.length);
-            }}>{budgetStep<budgetSteps.length-1?'Lanjut':'Lihat Anggaran'}</button></div>
+            <h2>{budgetSteps[budgetStep].label}</h2><p>{budgetSteps[budgetStep].hint}</p>{budgetInput()}
+            <div className="step-actions">{budgetStep>0&&<button className="secondary" onClick={()=>BS(budgetStep-1)}>Kembali</button>}<button className="primary" disabled={!budgetStepValid()} onClick={()=>{if(budgetStep<budgetSteps.length-1){BS(budgetStep+1);return}const ti=fixedIncome+variableIncome;PD(Math.round(ti*.20));CD(Math.round(ti*.15));INS(Math.round(ti*.10));FF(Math.round(ti*.10));CS(Math.max(0,ti-Math.round(ti*.20)-Math.round(ti*.15)-Math.round(ti*.10)-Math.round(ti*.10)));BS(budgetSteps.length)}}>{budgetStep<budgetSteps.length-1?'Lanjut':'Lihat Anggaran'}</button></div>
           </article>
           <article className="budget-preview"><small>ANGGARAN SEMENTARA</small><h3>{budgetName||'Anggaran kamu'}</h3><strong>{money(budget.totalIncome)}</strong><p>Total pemasukan tahunan</p><div className="budget-mini"><div><span>Tetap</span><b>{money(budget.fixed)}</b></div><div><span>Tidak tetap</span><b>{money(budget.variable)}</b></div></div></article>
         </div>}
         {budgetDone&&<article className="budget-report"><small>MENYUSUN ANGGARAN KEUANGAN</small><h2>Susunan anggaran tahunan</h2>
-          <div className="budget-report-section"><h3>Data Diri</h3><div className="budget-data"><div><span>Nama :</span><b>{budgetName}</b></div><div><span>Usia :</span><b>{budgetAge} tahun</b></div></div></div>
-          <div className="budget-report-section"><h3>Pemasukan Tahunan</h3><p>Pemasukan kamu dibedakan antara pemasukan yang tetap dan tidak tetap untuk menjadi acuan pengeluaran yang ideal.</p><div className="budget-data"><div><span>Tetap :</span><b>{money(budget.fixed)}</b></div><div><span>Tidak Tetap :</span><b>{money(budget.variable)}</b></div><div className="highlight"><span>Total Pemasukan :</span><b>{money(budget.totalIncome)}</b></div><div><span>Harga Per Gram Emas Saat Ini :</span><b>{money(budget.goldPrice)}</b></div></div></div>
-          <div className="budget-report-section"><h3>Pengeluaran Tahunan</h3><p>Pengeluaran tahunan ini merupakan pengeluaran yang dibagi dalam pos sesuai prioritas pengelolaan keuangan.</p>
-          <div className="budget-table">
-            <div><b>Pos Zakat</b><span>2,5% dari pemasukan</span><strong>{money(budget.zakat)}</strong></div>
-            {budgetMoneyField('Pos ISWAF',budget.iswaf,IW,0,budget.limits.iswafMax,'Maks. 7,5% dari total pemasukan')}
-            {budgetMoneyField('Utang Produktif',budget.productiveDebt,PD,budget.limits.productiveDebtMin,budget.limits.totalDebtMax,'Min. 20% dari pemasukan')}
-            {budgetMoneyField('Utang Konsumtif',budget.consumerDebt,CD,0,Math.min(budget.limits.consumerDebtMax,Math.max(0,budget.limits.totalDebtMax-budget.productiveDebt)),'Maks. 15% dan total utang maks. 35%')}
-            {budgetMoneyField('Pos Kontribusi Asuransi Syariah',budget.insurance,INS,budget.limits.insuranceMin,budget.totalIncome,'Min. 10% dari pemasukan')}
-            {budgetMoneyField('Pos Dana Masa Depan',budget.futureFund,FF,budget.limits.futureFundMin,budget.totalIncome,'Min. 10% dari pemasukan')}
-            {budgetMoneyField('Pos Belanja Sekarang',budget.currentSpending,CS,0,budget.limits.currentSpendingMax,'Sisa anggaran setelah pos prioritas')}
-            <div className="total"><b>Total Anggaran</b><strong>{money(budget.totalBudget)}</strong></div>
-            <div className="surplus"><b>Surplus</b><strong>{money(budget.surplus)}</strong></div>
-          </div></div>
+          <div className="budget-report-section"><h3>Data Diri</h3><div className="budget-data"><div><span>Nama</span><b>{budgetName}</b></div><div><span>Usia</span><b>{budgetAge} tahun</b></div></div></div>
+          <div className="budget-report-section"><h3>Pemasukan Tahunan</h3><p>Pemasukan dibedakan antara pemasukan tetap dan tidak tetap sebagai acuan pengeluaran yang ideal.</p><div className="budget-data"><div><span>Tetap</span><b>{money(budget.fixed)}</b></div><div><span>Tidak Tetap</span><b>{money(budget.variable)}</b></div><div className="highlight"><span>Total Pemasukan</span><b>{money(budget.totalIncome)}</b></div><div><span>Harga Emas/gram</span><b>{money(budget.goldPrice)}</b></div></div></div>
+          <div className="budget-report-section"><h3>Pengeluaran Tahunan</h3><p>Pengeluaran tahunan dibagi dalam pos sesuai prioritas pengelolaan keuangan.</p><div className="budget-table"><div><b>Pos Zakat</b><span>2,5% dari pemasukan</span><strong>{money(budget.zakat)}</strong></div>{budgetMoneyField('Pos ISWAF',budget.iswaf,IW,0,budget.limits.iswafMax,'Maks. 7,5% dari total pemasukan')}{budgetMoneyField('Utang Produktif',budget.productiveDebt,PD,budget.limits.productiveDebtMin,budget.limits.totalDebtMax,'Min. 20% dari pemasukan')}{budgetMoneyField('Utang Konsumtif',budget.consumerDebt,CD,0,Math.min(budget.limits.consumerDebtMax,Math.max(0,budget.limits.totalDebtMax-budget.productiveDebt)),'Maks. 15% dan total utang maks. 35%')}{budgetMoneyField('Pos Kontribusi Asuransi Syariah',budget.insurance,INS,budget.limits.insuranceMin,budget.totalIncome,'Min. 10% dari pemasukan')}{budgetMoneyField('Pos Dana Masa Depan',budget.futureFund,FF,budget.limits.futureFundMin,budget.totalIncome,'Min. 10% dari pemasukan')}{budgetMoneyField('Pos Belanja Sekarang',budget.currentSpending,CS,0,budget.limits.currentSpendingMax,'Sisa anggaran setelah pos prioritas')}<div className="total"><b>Total Anggaran</b><strong>{money(budget.totalBudget)}</strong></div><div className="surplus"><b>Surplus</b><strong>{money(budget.surplus)}</strong></div></div></div>
           <p className="gold-note">Harga emas saat ini: {money(budget.goldPrice)}/gram. Nilai ini menjadi referensi laporan dan tidak mengubah total anggaran.</p>
-          <div className="report-copy budget-report-copy">
-            <section><h4>Ringkasan Hasil</h4><p>{reportCopy.budget.summary}</p></section>
-            <section><h4>Insight Keuangan</h4><p>{reportCopy.budget.insight}</p></section>
-            <section><h4>Rekomendasi</h4><p>{reportCopy.budget.recommendation}</p></section>
-            <section><h4>Langkah Berikutnya</h4><p>{reportCopy.budget.next}</p></section>
-          </div>
-          <div className="budget-report-actions">
-            <button className="secondary" onClick={()=>BS(budgetSteps.length-1)}>Kembali</button>
-            <button className="primary" onClick={downloadBudgetPDF}>Unduh PDF</button>
-            <a className="consult-button" href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer">Konsultasikan Kebutuhan Anda</a>
-          </div>
+          <div className="report-copy budget-report-copy"><section><h4>Ringkasan Hasil</h4><p>{reportCopy.budget.summary}</p></section><section><h4>Insight Keuangan</h4><p>{reportCopy.budget.insight}</p></section><section><h4>Financial Protection Awareness</h4><p>{reportCopy.budget.protection}</p></section><section><h4>Rekomendasi</h4><p>{reportCopy.budget.recommendation}</p></section><section><h4>Langkah Berikutnya</h4><p>{reportCopy.budget.next}</p></section></div>
+          <div className="budget-report-actions"><button className="secondary" onClick={()=>BS(budgetSteps.length-1)}>Kembali</button><button className="primary" onClick={downloadPDF}>Unduh PDF</button><a className="consult-button" href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer">Konsultasikan Kebutuhan Anda</a></div>
         </article>}
       </>:<div className="layout">
         <article><h2>{items.find(x=>x[0]===id)?.[1]}</h2><p>{items.find(x=>x[0]===id)?.[2]}</p><div className="fields">
           {id==='check'?<>{field('Penghasilan bulanan',income,N)}{field('Pengeluaran bulanan',expense,E)}{field('Cicilan / utang bulanan',debtPayment,DP)}{field('Dana darurat',emergency,EF)}{field('Investasi',investments,IV)}{field('Total aset',assets,A)}{field('Total utang',debt,B)}{field('Proteksi / uang pertanggungan',protection,PR)}{field('Jumlah tanggungan',dependents,DE)}</>:id==='kpr'?<>{field('Harga rumah (Rp)',price,P)}{field('DP (Rp)',dp,D)}{field('Tenor (tahun)',years,Y)}{field('Asumsi imbal hasil %',rate,R)}</>:id==='invest'?<>{field('Setoran bulanan',monthly,M)}{field('Jangka waktu (tahun)',years,Y)}{field('Asumsi imbal hasil %',rate,R)}</>:id==='inherit'?<>{field('Aset likuid',liquid,L)}{field('Aset lain',price,P)}{field('Kewajiban',debt,B)}</>:id==='zakat'?field('Harta simulasi zakat',liquid,L):id==='insurance'?<>{field('Pengeluaran bulanan',expense,E)}{field('Tahun dukungan',years,Y)}{field('Kewajiban',debt,B)}{field('Aset likuid',liquid,L)}</>:<>{field('Biaya / target saat ini',target,T)}{field('Jangka waktu (tahun)',years,Y)}{field('Inflasi %',infl,I)}{field('Asumsi imbal hasil %',rate,R)}</>}
         </div>{id==='check'&&<div className="dss-note"><strong>Decision Support System</strong><span>Rule-based untuk versi awal. Threshold dibuat eksplisit agar bisa dikalibrasi ketika data pengguna sudah tersedia.</span></div>}</article>
-        <article className="result">
-          <small>HASIL SIMULASI</small><h3>{title}</h3><strong>{value}</strong><p>{sub}</p>
+        <article className="result"><small>HASIL SIMULASI</small><h3>{title}</h3><strong>{value}</strong><p>{sub}</p>
+          <label className="report-name">Nama untuk laporan<input type="text" value={reportName} placeholder="Contoh: Jasmine" onChange={e=>RN(e.target.value)}/></label>
           {id==='check'&&<div className="metric-list">{checkup.metrics.map(m=><div className="metric" key={m.key}><div><b>{m.label}</b><span>{m.value.toFixed(1)}{m.unit}</span></div><em className={m.status}>{statusLabel(m.status)}</em></div>)}</div>}
-          <div className="report-copy">
-            <section><h4>Ringkasan Hasil</h4><p>{reportCopy[id].summary}</p></section>
-            <section><h4>Insight Keuangan</h4><p>{reportCopy[id].insight}</p></section>
-            <section><h4>Rekomendasi</h4><p>{reportCopy[id].recommendation}</p></section>
-            <section><h4>Langkah Berikutnya</h4><p>{reportCopy[id].next}</p></section>
-          </div>
-          <div className="report-actions"><button className="primary" onClick={()=>window.print()}>Unduh PDF</button><a className="consult-button" href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer">Konsultasikan Kebutuhan Anda</a></div>
+          <div className="report-copy"><section><h4>Ringkasan Hasil</h4><p>{reportCopy[id].summary}</p></section><section><h4>Insight Keuangan</h4><p>{reportCopy[id].insight}</p></section><section><h4>Financial Protection Awareness</h4><p>{reportCopy[id].protection}</p></section><section><h4>Rekomendasi</h4><p>{reportCopy[id].recommendation}</p></section><section><h4>Langkah Berikutnya</h4><p>{reportCopy[id].next}</p></section></div>
+          <div className="report-actions"><button className="primary" onClick={downloadPDF}>Unduh PDF</button><a className="consult-button" href="https://www.wealthplanner.id/konsultasiasuransi" target="_blank" rel="noreferrer">Konsultasikan Kebutuhan Anda</a></div>
         </article>
       </div>}
       {id==='check'&&<article className="recommendation"><small>REKOMENDASI DSS</small><h2>Prioritas tindakan</h2>{checkup.priorities.length?checkup.priorities.map((p,i)=><div className="priority" key={p.title}><strong>{i+1}. {p.title}</strong><span>{p.reason}</span><p>{p.action}</p></div>):<p>Fondasi keuanganmu sudah cukup baik. Pertahankan kebiasaan yang ada dan review secara berkala.</p>}</article>}
       <footer>Simulasi edukasi, bukan jaminan imbal hasil, nasihat hukum/pajak/fatwa, atau rekomendasi produk. Rule dan asumsi Financial Check-Up dapat dikalibrasi seiring tersedianya data yang memadai.</footer>
     </section>
+
+    <div className="report-document">
+      <div className="report-cover">
+        <div className="report-brand">WEALTH PLANNER <span>INDONESIA</span></div>
+        <div className="report-cover-kicker">PERSONAL FINANCIAL REPORT</div>
+        <h1>{items.find(x=>x[0]===id)?.[1]}</h1>
+        <p>Hi, {effectiveName}!</p>
+        <div className="report-cover-line"/>
+        <small>Disusun berdasarkan informasi dan asumsi yang dimasukkan ke dalam kalkulator Wealth Planner Indonesia.</small>
+      </div>
+      <div className="report-page">
+        <div className="report-meta"><span>{pageCopy[id].eyebrow}</span><span>{new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</span></div>
+        <section className="report-intro"><h2>Gambaran Perencanaan</h2><p>Terima kasih telah menggunakan Wealth Planner Indonesia. Laporan ini menyajikan hasil perhitungan {items.find(x=>x[0]===id)?.[1]} secara lebih terstruktur agar kamu dapat memahami angka utama, asumsi, dan hal yang perlu diperhatikan dalam perencanaan keuangan.</p></section>
+        <section className="report-hero-result"><span>HASIL UTAMA</span><h2>{report.headline}</h2><strong>{report.value}</strong><p>{report.caption}</p><div className="report-summary-grid"><div><span>{report.summaryLabel}</span><b>{report.summaryValue}</b></div><div><span>Nama</span><b>{effectiveName}</b></div></div></section>
+        <section className="report-section"><div className="section-heading"><span>01</span><div><small>FINANCIAL CALCULATION</small><h2>Perhitungan & parameter</h2></div></div>{report.detail}</section>
+        <section className="report-section"><div className="section-heading"><span>02</span><div><small>VISUAL SUMMARY</small><h2>{report.chartTitle}</h2></div></div>{report.chart}</section>
+        <section className="report-section"><div className="section-heading"><span>03</span><div><small>FINANCIAL INSIGHTS</small><h2>Memahami hasil simulasi</h2></div></div><div className="insight-grid"><article><b>Ringkasan</b><p>{reportCopy[id].summary}</p></article><article><b>Insight</b><p>{reportCopy[id].insight}</p></article><article><b>Yang perlu diperhatikan</b><p>{reportCopy[id].recommendation}</p></article></div></section>
+        <section className="report-protection"><div className="section-heading"><span>04</span><div><small>FINANCIAL PROTECTION AWARENESS</small><h2>Menjaga tujuan yang sudah direncanakan</h2></div></div><p>{reportCopy[id].protection}</p><div className="protection-note">Perencanaan keuangan yang baik tidak hanya membahas cara mencapai tujuan, tetapi juga bagaimana tujuan dan keluarga tetap terlindungi ketika terjadi risiko kehidupan.</div></section>
+        <section className="report-section"><div className="section-heading"><span>05</span><div><small>NEXT STEP</small><h2>Langkah berikutnya</h2></div></div><div className="action-list"><div><b>01</b><span>{reportCopy[id].next}</span></div><div><b>02</b><span>Review kembali asumsi dan angka ketika kondisi finansialmu berubah.</span></div><div><b>03</b><span>Jika membutuhkan perspektif yang lebih menyeluruh, gunakan hasil ini sebagai bahan diskusi bersama Wealth Planner Indonesia.</span></div></div></section>
+        <section className="report-closing"><div className="report-brand">WEALTH PLANNER <span>INDONESIA</span></div><h2>Jangan hanya merencanakan bagaimana mencapai tujuan finansialmu, tetapi persiapkan juga bagaimana menjaganya.</h2><p>Ingin mendapatkan gambaran perencanaan keuangan yang lebih menyeluruh dan sesuai dengan kebutuhanmu?</p><a href="https://www.wealthplanner.id/konsultasiasuransi">KONSULTASI SEKARANG!</a><small>Wealth Planner Indonesia · Simulasi edukasi, bukan jaminan imbal hasil atau rekomendasi produk.</small></section>
+      </div>
+    </div>
   </main>
 }
