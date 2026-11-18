@@ -167,3 +167,186 @@
   @page{size:A4;margin:8mm}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
+
+
+/* FINAL PRINT REPORT — single A4 page, no clipping */
+@media print{
+  @page{size:A4 portrait;margin:7mm}
+  html,body{width:210mm!important;min-height:297mm!important;background:#fff!important}
+  body{font-size:10px!important;overflow:visible!important}
+  .report-document{
+    display:block!important;
+    width:196mm!important;
+    height:283mm!important;
+    max-height:283mm!important;
+    overflow:hidden!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .report-cover{
+    min-height:0!important;
+    height:auto!important;
+    padding:0 0 2.5mm!important;
+    margin:0 0 2.5mm!important;
+  }
+  .report-brand{font-size:10px!important}
+  .report-cover-kicker{font-size:6px!important;letter-spacing:1.2px!important;margin-top:1mm!important}
+  .report-cover h1{font-size:18px!important;line-height:1.05!important;margin:1mm 0!important}
+  .report-cover>p{font-size:8px!important}
+  .report-cover-line{width:14mm;height:1.5px!important;margin:1.5mm 0!important}
+  .report-cover small{font-size:5.5px!important;line-height:1.25!important}
+
+  .report-page{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-auto-rows:auto!important;
+    gap:2.2mm 4mm!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  .report-meta{
+    font-size:5.5px!important;
+    padding-bottom:1.2mm!important;
+    margin:0!important;
+  }
+  .report-intro{margin:0!important}
+  .report-intro h2{font-size:8px!important;margin:0 0 .8mm!important}
+  .report-intro p{font-size:6px!important;line-height:1.25!important;margin:0!important}
+
+  .report-hero-result{
+    padding:2.8mm!important;
+    border-radius:2mm!important;
+  }
+  .report-hero-result>span{font-size:5px!important}
+  .report-hero-result h2{font-size:8px!important;margin:.7mm 0!important}
+  .report-hero-result>strong{font-size:17px!important;margin:.7mm 0!important}
+  .report-hero-result>p{font-size:5.5px!important;line-height:1.2!important}
+  .report-summary-grid{gap:3mm!important;margin-top:1.5mm!important;padding-top:1.2mm!important}
+  .report-summary-grid span{font-size:4.8px!important}
+  .report-summary-grid b{font-size:6.5px!important}
+
+  .report-section,.report-protection{min-width:0!important;margin:0!important;padding:0!important}
+  .section-heading{
+    display:flex!important;
+    align-items:flex-start!important;
+    gap:1.5mm!important;
+    margin:0 0 1mm!important;
+  }
+  .section-heading>span{
+    flex:0 0 auto!important;
+    font-size:6px!important;
+    font-weight:900!important;
+    color:#5c8b73!important;
+    line-height:1.2!important;
+  }
+  .section-heading small{font-size:4.8px!important;letter-spacing:1px!important;line-height:1!important}
+  .section-heading h2{font-size:8px!important;line-height:1.1!important;margin:.5mm 0 0!important}
+
+  .report-table{
+    width:100%!important;
+    border-radius:1.5mm!important;
+  }
+  .report-table>div{
+    grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) auto!important;
+    gap:1mm!important;
+    padding:1.15mm 1.5mm!important;
+    min-height:0!important;
+    font-size:5.4px!important;
+    line-height:1.15!important;
+  }
+  .report-table span{font-size:5.2px!important}
+  .report-table b{font-size:5.5px!important}
+  .report-table em{font-size:4.2px!important;padding:.35mm .7mm!important}
+
+  .report-highlight{
+    margin-top:1mm!important;
+    padding:1.3mm 1.5mm!important;
+    font-size:5.3px!important;
+  }
+  .report-highlight b{font-size:6.5px!important}
+
+  .report-bars{margin:0!important}
+  .report-bar{margin:0 0 1.2mm!important}
+  .report-bar>div{
+    font-size:5px!important;
+    margin-bottom:.35mm!important;
+    line-height:1!important;
+  }
+  .report-bar i{height:2px!important}
+  .report-bar em{height:100%!important}
+
+  .insight-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:1mm!important;
+  }
+  .insight-grid article{
+    padding:1.4mm 1.6mm!important;
+    margin:0!important;
+    border:1px solid #e2ebe4!important;
+    border-radius:1.5mm!important;
+    background:#f8faf8!important;
+  }
+  .insight-grid article b{font-size:5.3px!important;display:block!important;margin-bottom:.4mm!important}
+  .insight-grid article p{
+    font-size:5px!important;
+    line-height:1.22!important;
+    margin:0!important;
+    color:#61736a!important;
+  }
+
+  .report-protection{
+    background:#eef7f1!important;
+    padding:2mm!important;
+    border-radius:2mm!important;
+  }
+  .report-protection .section-heading{margin-bottom:.8mm!important}
+  .report-protection p{font-size:5.3px!important;line-height:1.25!important;margin:0!important}
+  .report-protection .protection-note{font-size:4.8px!important;line-height:1.2!important;margin-top:1mm!important}
+
+  .action-list{
+    display:grid!important;
+    gap:.8mm!important;
+  }
+  .action-list>div{
+    display:grid!important;
+    grid-template-columns:5mm 1fr!important;
+    gap:1.5mm!important;
+    align-items:start!important;
+    padding:1mm 0!important;
+    border-bottom:1px solid #e8eee9!important;
+  }
+  .action-list>div:last-child{border-bottom:0!important}
+  .action-list b{font-size:5px!important;color:#5c8b73!important}
+  .action-list span{font-size:5.1px!important;line-height:1.22!important;color:#61736a!important}
+
+  .report-closing{
+    grid-column:1 / -1!important;
+    margin:0!important;
+    padding:2.8mm 3.5mm!important;
+    border-radius:2mm!important;
+    display:grid!important;
+    grid-template-columns:1.5fr 1fr!important;
+    gap:1mm 4mm!important;
+  }
+  .report-closing .report-brand{grid-column:1 / -1!important;font-size:8px!important}
+  .report-closing h2{font-size:8px!important;line-height:1.15!important;margin:1mm 0!important}
+  .report-closing p{font-size:5.2px!important;line-height:1.2!important;margin:0!important}
+  .report-closing a{
+    align-self:center!important;
+    justify-self:end!important;
+    font-size:5.3px!important;
+    padding:1.6mm 2.5mm!important;
+    border-radius:1.5mm!important;
+    white-space:nowrap!important;
+  }
+  .report-closing small{
+    grid-column:1 / -1!important;
+    font-size:4.2px!important;
+    line-height:1.15!important;
+    margin-top:.5mm!important;
+  }
+
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
