@@ -350,3 +350,31 @@
 
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
 }
+
+
+/* Progressive calculator flow */
+.dynamic-form{min-height:560px;display:flex;flex-direction:column;justify-content:flex-start}
+.dynamic-progress{margin-bottom:30px}
+.dynamic-progress>div{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.dynamic-progress span{font-size:10px;letter-spacing:1.5px;font-weight:800;color:#79a58a}
+.dynamic-progress b{font-size:10px;color:#173a2c}
+.dynamic-progress i{display:block;height:5px;background:#e8eee9;border-radius:99px;overflow:hidden}
+.dynamic-progress em{display:block;height:100%;background:#00bd79;border-radius:99px;transition:width .25s}
+.dynamic-question{margin-top:44px;max-width:600px}
+.dynamic-question small{font-size:11px;letter-spacing:1.2px;font-weight:800;color:#79a58a}
+.dynamic-question h3{font-size:30px;line-height:1.15;margin:10px 0 8px;color:#173a2c}
+.dynamic-question p{margin:0 0 24px;max-width:540px}
+.dynamic-question label{display:block;max-width:560px}
+.dynamic-question input{font-size:20px;padding:15px 16px;border-radius:12px}
+.dynamic-actions{display:flex;gap:10px;margin-top:auto;padding-top:42px}
+.dynamic-actions button{min-width:110px;border:0;border-radius:10px;padding:12px 20px;font-weight:800;cursor:pointer}
+.dynamic-actions .primary{background:#103b2d;color:white}
+.dynamic-actions .secondary{background:#edf3ef;color:#315b49}
+@media(max-width:800px){
+ .dynamic-form{min-height:500px}
+ .dynamic-question{margin-top:30px}
+ .dynamic-question h3{font-size:25px}
+}
+@media print{
+ .dynamic-form{display:none!important}
+}
